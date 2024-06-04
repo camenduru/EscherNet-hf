@@ -1,12 +1,6 @@
 ---
 title: EscherNet
-emoji: 🐠
-colorFrom: blue
-colorTo: red
+app_file: gradio_demo.py
 sdk: gradio
-sdk_version: 4.32.2
-app_file: app.py
-pinned: false
+sdk_version: 4.19.2
 ---
-
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
