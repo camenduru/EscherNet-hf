@@ -65,7 +65,7 @@ import einops
 if CaPE_TYPE == "6DoF":
     import sys
 
-    sys.path.insert(0, "../6DoF/")
+    sys.path.insert(0, "./6DoF/")
     # use the customized diffusers modules
     from diffusers import DDIMScheduler
     from dataset import get_pose
@@ -75,7 +75,7 @@ if CaPE_TYPE == "6DoF":
 elif CaPE_TYPE == "4DoF":
     import sys
 
-    sys.path.insert(0, "../4DoF/")
+    sys.path.insert(0, "./4DoF/")
     # use the customized diffusers modules
     from diffusers import DDIMScheduler
     from dataset import get_pose
@@ -83,6 +83,11 @@ elif CaPE_TYPE == "4DoF":
     from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 else:
     raise ValueError("CaPE_TYPE must be chosen from 4DoF, 6DoF")
+
+# from eschernet.diffusers import DDIMScheduler
+# from eschernet.dataset import get_pose
+# from eschernet.CN_encoder import CN_encoder
+# from eschernet.pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 
 
 pretrained_model_name_or_path = "XY-Xin/N3M3B112G6_6dof_36k"   # TODO
@@ -536,17 +541,36 @@ def main():
 
     _HEADER_ = '''
     <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
-    EscherNet is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis.
-    Project: <a href='https://kxhit.github.io/EscherNet' Code: <a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a>. Paper: <a href='https://arxiv.org/abs/2402.03908' target='_blank'>ArXiv</a>.
+    <b>EscherNet</b> is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis. 
+    
+    Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Camera Positional Embedding)</b>.
+    
+    <a href='https://kxhit.github.io/EscherNet' target='_blank'>Project</a> <b>|</b>
+    <a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a> <b>|</b>
+    <a href='https://arxiv.org/abs/2402.03908' target='_blank'>ArXiv</a>
+    
+    <h4><b>Tips:</b></h4>
+    
+    - Our model can take <b>any number input images</b>. The more images you provide, the better the results.
+    
+    - Our model can generate <b>any number and any pose</b> novel views. You can specify the number of views you want to generate. In this demo, we set novel views on an <b>archemedian spiral</b> for simplicity.
+    
+    - The pose estimation is done using <a href='https://github.com/naver/dust3r' target='_blank'>DUSt3R</a>. You can also provide your own poses or get pose via any SLAM system.
+    
+    - The current checkpoint supports 6DoF camera pose and is trained on 30k 3D <a href='https://objaverse.allenai.org/' target='_blank'>Objaverse</a> objects for demo. Scaling is on the roadmap!
+    
     '''
 
     _CITE_ = r"""
+    📝 <b>Citation</b>:
+    ```bibtex
             @article{kong2024eschernet,
             title={EscherNet: A Generative Model for Scalable View Synthesis},
           author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
           journal={arXiv preprint arXiv:2402.03908},
           year={2024}
         }
+    ```
     """
 
     with gr.Blocks() as demo:
@@ -585,7 +609,9 @@ def main():
                     outmodel = gr.Model3D()
 
                 with gr.Row():
-                    gr.Markdown('''Check if the pose and segmentation looks correct. If not, remove the incorrect images and try again.''')
+                    gr.Markdown('''
+                    <h4><b>Check if the pose and segmentation looks correct. If not, remove the incorrect images and try again.</b></h4>
+                    ''')
 
                 with gr.Row():
                     with gr.Group():
@@ -611,11 +637,13 @@ def main():
                             step=1
                         )
 
-                        nvs_mode = gr.Dropdown(["archimedes circle", "fixed 4 views", "fixed 8 views"],
+                        nvs_mode = gr.Dropdown(["archimedes circle"],   # "fixed 4 views", "fixed 8 views"
                                            value="archimedes circle", label="Novel Views Pose Chosen", visible=True)
 
                 with gr.Row():
-                    gr.Markdown('''Choose your desired novel view poses and generate!''')
+                    gr.Markdown('''
+                    <h4><b>Choose your desired novel view poses number and generate! The more images the longer it takes.</b></h4>
+                    ''')
 
                 with gr.Row():
                     submit = gr.Button("Submit", elem_id="eschernet", variant="primary")
@@ -652,7 +680,7 @@ def main():
                 #         gr.Markdown("Note: The model shown here has a darker appearance. Download to get correct results.")
 
                 with gr.Row():
-                    gr.Markdown('''Try a different <b>seed value</b> if the result is unsatisfying (Default: 42).''')
+                    gr.Markdown('''The novel views are generated on an archimedean spiral. You can download the video''')
 
         gr.Markdown(_CITE_)
 
