@@ -15,7 +15,7 @@ import cv2
 import matplotlib.pyplot as pl
 pl.ion()
 
-
+CaPE_TYPE = "6DoF"
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 weight_dtype = torch.float16
 torch.backends.cuda.matmul.allow_tf32 = True  # for gpu >= Ampere and pytorch >= 1.12
@@ -60,37 +60,17 @@ def look_at(origin, target, up):
     matrix = np.row_stack((rotation_matrix, [0, 0, 0, 1]))
     return matrix
 
-CaPE_TYPE = "6DoF"
 import einops
-if CaPE_TYPE == "6DoF":
-    import sys
+import sys
 
-    sys.path.insert(0, "./6DoF/")
-    # use the customized diffusers modules
-    from diffusers import DDIMScheduler
-    from dataset import get_pose
-    from CN_encoder import CN_encoder
-    from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
+sys.path.insert(0, "./6DoF/")
+# use the customized diffusers modules
+from diffusers import DDIMScheduler
+from dataset import get_pose
+from CN_encoder import CN_encoder
+from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 
-elif CaPE_TYPE == "4DoF":
-    import sys
-
-    sys.path.insert(0, "./4DoF/")
-    # use the customized diffusers modules
-    from diffusers import DDIMScheduler
-    from dataset import get_pose
-    from CN_encoder import CN_encoder
-    from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
-else:
-    raise ValueError("CaPE_TYPE must be chosen from 4DoF, 6DoF")
-
-# from eschernet.diffusers import DDIMScheduler
-# from eschernet.dataset import get_pose
-# from eschernet.CN_encoder import CN_encoder
-# from eschernet.pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
-
-
-pretrained_model_name_or_path = "XY-Xin/N3M3B112G6_6dof_36k"   # TODO
+pretrained_model_name_or_path = "kxic/EscherNet_demo"   # TODO
 resolution = 256
 h,w = resolution,resolution
 guidance_scale = 3.0
