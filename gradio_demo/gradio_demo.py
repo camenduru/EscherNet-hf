@@ -535,9 +535,18 @@ def main():
     generate_mvs = functools.partial(run_eschernet, tmpdirname)
 
     _HEADER_ = '''
+    <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
+    EscherNet is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis.
+    Project: <a href='https://kxhit.github.io/EscherNet' Code: <a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a>. Paper: <a href='https://arxiv.org/abs/2402.03908' target='_blank'>ArXiv</a>.
     '''
 
     _CITE_ = r"""
+            @article{kong2024eschernet,
+            title={EscherNet: A Generative Model for Scalable View Synthesis},
+          author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
+          journal={arXiv preprint arXiv:2402.03908},
+          year={2024}
+        }
     """
 
     with gr.Blocks() as demo:
