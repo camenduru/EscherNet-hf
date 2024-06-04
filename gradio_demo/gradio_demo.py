@@ -523,7 +523,7 @@ def main():
     <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
     <b>EscherNet</b> is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis. 
     
-    Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Camera Positional Embedding)</b>.
+    Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Camera Positional Encoding)</b>.
     
     <a href='https://kxhit.github.io/EscherNet' target='_blank'>Project</a> <b>|</b>
     <a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a> <b>|</b>
