@@ -18,7 +18,7 @@ import matplotlib.pyplot as pl
 pl.ion()
 
 CaPE_TYPE = "6DoF"
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cuda' #if torch.cuda.is_available() else 'cpu'
 weight_dtype = torch.float16
 torch.backends.cuda.matmul.allow_tf32 = True  # for gpu >= Ampere and pytorch >= 1.12
 
