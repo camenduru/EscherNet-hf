@@ -65,7 +65,7 @@ def look_at(origin, target, up):
 import einops
 import sys
 
-sys.path.insert(0, "./6DoF/")
+sys.path.insert(0, "./6DoF/")   # TODO change it when deploying
 # use the customized diffusers modules
 from diffusers import DDIMScheduler
 from dataset import get_pose
