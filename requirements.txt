@@ -258,7 +258,7 @@ Werkzeug==2.2.3
 widgetsnbextension==4.0.8
 wrapt==1.15.0
 xatlas==0.0.8
-xformers==0.0.19
+xformers>=0.0.19
 xxhash==3.2.0
 yarl==1.9.2
 zipp==3.16.2
