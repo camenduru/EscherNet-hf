@@ -1,3 +1,5 @@
+import spaces
+
 import gradio as gr
 import os
 import shutil
@@ -111,7 +113,7 @@ pipeline.enable_vae_slicing()
 
 
 
-
+@spaces.GPU(duration=120)
 def run_eschernet(tmpdirname, eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
     generator = torch.Generator(device=device).manual_seed(sample_seed)
@@ -212,6 +214,7 @@ def run_eschernet(tmpdirname, eschernet_input_dict, sample_steps, sample_seed, n
     return image, video_path
 
 # TODO mesh it
+@spaces.GPU(duration=120)
 def make3d():
     pass
 
@@ -284,7 +287,7 @@ def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, 
     scene.export(file_obj=outfile)
     return outfile
 
-
+@spaces.GPU(duration=120)
 def get_3D_model_from_scene(outdir, silent, scene, min_conf_thr=3, as_pointcloud=False, mask_sky=False,
                             clean_depth=False, transparent_cams=False, cam_size=0.05, same_focals=False):
     """
@@ -316,7 +319,7 @@ def get_3D_model_from_scene(outdir, silent, scene, min_conf_thr=3, as_pointcloud
                                         transparent_cams=transparent_cams, cam_size=cam_size, silent=silent,
                                         same_focals=same_focals)
 
-
+@spaces.GPU(duration=120)
 def get_reconstructed_scene(outdir, model, device, silent, image_size, filelist, schedule, niter, min_conf_thr,
                             as_pointcloud, mask_sky, clean_depth, transparent_cams, cam_size,
                             scenegraph_type, winsize, refid, same_focals):
@@ -567,20 +570,15 @@ def main():
                     run_dust3r = gr.Button("Get Pose!", elem_id="dust3r")
                 with gr.Row():
                     processed_image = gr.Gallery(label='rgb,rgba', columns=2, height="100%")
-
-
-
-
-
-                # with gr.Row(variant="panel"):
-                #     gr.Examples(
-                #         examples=[
-                #             os.path.join("examples/hairdryer", img_name) for img_name in sorted(os.listdir("examples/hairdryer"))
-                #         ],
-                #         inputs=[input_image],
-                #         label="Examples",
-                #         examples_per_page=20
-                #     )
+                with gr.Row(variant="panel"):
+                    gr.Examples(
+                        examples=[
+                            os.path.join("examples/hairdryer", img_name) for img_name in sorted(os.listdir("examples/hairdryer"))
+                        ],
+                        inputs=[input_image],
+                        label="Examples",
+                        examples_per_page=20
+                    )
 
             # right column
             with gr.Column():
