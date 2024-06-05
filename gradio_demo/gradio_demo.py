@@ -235,6 +235,7 @@ from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
 import functools
 import math
 
+@spaces.GPU
 def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, cam_size=0.05,
                                  cam_color=None, as_pointcloud=False,
                                  transparent_cams=False, silent=False, same_focals=False):
@@ -498,8 +499,24 @@ def set_scenegraph_options(inputfiles, winsize, refid, scenegraph_type):
     return winsize, refid
 
 
+def get_examples(path):
+    objs = []
+    for obj_name in sorted(os.listdir(path)):
+        img_files = []
+        for img_file in sorted(os.listdir(os.path.join(path, obj_name))):
+            img_files.append(os.path.join(path, obj_name, img_file))
+        objs.append([img_files])
+    print("objs = ", objs)
+    return objs
 
-
+def preview_input(inputfiles):
+    if inputfiles is None:
+        return None
+    imgs = []
+    for img_file in inputfiles:
+        img = pl.imread(img_file)
+        imgs.append(img)
+    return imgs
 
 def main():
     # dustr init
@@ -566,19 +583,29 @@ def main():
             with gr.Column():
                 with gr.Row():
                     input_image = gr.File(file_count="multiple")
+                # with gr.Row():
+                #     # set the size of the window
+                #     preview_image = gr.Gallery(label='Input Views', rows=1,
                 with gr.Row():
                     run_dust3r = gr.Button("Get Pose!", elem_id="dust3r")
                 with gr.Row():
-                    processed_image = gr.Gallery(label='rgb,rgba', columns=2, height="100%")
+                    processed_image = gr.Gallery(label='Input Views', columns=2, height="100%")
                 with gr.Row(variant="panel"):
+                    # input examples under "examples" folder
                     gr.Examples(
-                        examples=[
-                            os.path.join("examples/hairdryer", img_name) for img_name in sorted(os.listdir("examples/hairdryer"))
-                        ],
+                        examples=get_examples('examples'),
+                        # examples=[
+                        #            [['examples/controller/frame000077.jpg', 'examples/controller/frame000032.jpg', 'examples/controller/frame000172.jpg']],
+                        #            [['examples/hairdryer/frame000081.jpg', 'examples/hairdryer/frame000162.jpg', 'examples/hairdryer/frame000003.jpg']],
+                        #           ],
                         inputs=[input_image],
-                        label="Examples",
+                        label="Examples (click one set of images to start!)",
                         examples_per_page=20
                     )
+
+
+
+
 
             # right column
             with gr.Column():
@@ -728,6 +755,11 @@ def main():
                           outputs=[scene, outmodel, processed_image, eschernet_input])
 
 
+        # events
+        # preview images on input change
+        input_image.change(fn=preview_input,
+                           inputs=[input_image],
+                           outputs=[processed_image])
 
         submit.click(fn=generate_mvs,
             inputs=[eschernet_input, sample_steps, sample_seed,
