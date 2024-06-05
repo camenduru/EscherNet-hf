@@ -647,7 +647,7 @@ def main():
 
                 with gr.Row():
                     gr.Markdown('''
-                    <h4><b>Choose your desired novel view poses number and generate! The more images the longer it takes.</b></h4>
+                    <h4><b>Choose your desired novel view poses number and generate! The more output images the longer it takes.</b></h4>
                     ''')
 
                 with gr.Row():
