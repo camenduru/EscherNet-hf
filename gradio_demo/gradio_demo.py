@@ -564,11 +564,11 @@ def main():
     _CITE_ = r"""
     📝 <b>Citation</b>:
     ```bibtex
-            @article{kong2024eschernet,
-            title={EscherNet: A Generative Model for Scalable View Synthesis},
-          author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
-          journal={arXiv preprint arXiv:2402.03908},
-          year={2024}
+    @article{kong2024eschernet,
+        title={EscherNet: A Generative Model for Scalable View Synthesis},
+        author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
+        journal={arXiv preprint arXiv:2402.03908},
+        year={2024}
         }
     ```
     """

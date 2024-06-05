@@ -39,3 +39,5 @@ logs/user_object/scene.glb filter=lfs diff=lfs merge=lfs -text
 3drecon/ours_GSO_T1/NeuS/lion/mesh.ply filter=lfs diff=lfs merge=lfs -text
 gradio_demo/examples/bike/003.jpg filter=lfs diff=lfs merge=lfs -text
 gradio_demo/examples/bike/027.jpg filter=lfs diff=lfs merge=lfs -text
+gradio_demo/examples/bike/bike_0.jpg filter=lfs diff=lfs merge=lfs -text
+gradio_demo/examples/bike/bike_2.jpg filter=lfs diff=lfs merge=lfs -text
