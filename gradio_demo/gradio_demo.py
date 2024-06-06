@@ -72,7 +72,7 @@ from dataset import get_pose
 from CN_encoder import CN_encoder
 from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 
-pretrained_model_name_or_path = "kxic/EscherNet_demo"   # TODO
+pretrained_model_name_or_path = "kxic/EscherNet_demo"
 resolution = 256
 h,w = resolution,resolution
 guidance_scale = 3.0
@@ -102,7 +102,7 @@ pipeline = Zero1to3StableDiffusionPipeline.from_pretrained(
     feature_extractor=None,
     torch_dtype=weight_dtype,
 )
-pipeline.image_encoder = image_encoder
+pipeline.image_encoder = image_encoder.to(weight_dtype)
 pipeline = pipeline.to(device)
 pipeline.set_progress_bar_config(disable=False)
 
