@@ -777,8 +777,9 @@ with gr.Blocks() as demo:
 
 
 
-demo.queue(max_size=10)
-demo.launch(share=True, server_name="0.0.0.0", server_port=None)
+# demo.queue(max_size=10)
+# demo.launch(share=True, server_name="0.0.0.0", server_port=None)
+demo.launch()
 
 # if __name__ == '__main__':
 #     main()
