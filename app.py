@@ -527,7 +527,7 @@ def preview_input(inputfiles):
 silent = False
 image_size = 224
 weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
-model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
+model = AsymmetricCroCo3DStereo.from_pretrained(weights_path, landscape_only=False).to(device)
 # dust3r will write the 3D model inside tmpdirname
 # with tempfile.TemporaryDirectory(suffix='dust3r_gradio_demo') as tmpdirname:
 tmpdirname = os.path.join('logs/user_object')
