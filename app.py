@@ -112,7 +112,7 @@ pipeline = pipeline.to(device)
 # pipeline.enable_xformers_memory_efficient_attention()
 # enable vae slicing
 pipeline.enable_vae_slicing()
-pipeline.enable_xformers_memory_efficient_attention()
+# pipeline.enable_xformers_memory_efficient_attention()
 
 
 
@@ -183,7 +183,7 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
 
     # run inference
     # pipeline.to(device)
-    # pipeline.enable_xformers_memory_efficient_attention()
+    pipeline.enable_xformers_memory_efficient_attention()
     if CaPE_TYPE == "6DoF":
         with torch.autocast("cuda"):
             image = pipeline(input_imgs=input_image, prompt_imgs=input_image,
@@ -237,8 +237,6 @@ from dust3r.utils.image import load_images, rgb
 from dust3r.utils.device import to_numpy
 from dust3r.viz import add_scene_cam, CAM_COLORS, OPENGL, pts3d_to_trimesh, cat_meshes
 from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
-
-import functools
 import math
 
 @spaces.GPU(duration=120)
@@ -699,9 +697,6 @@ with gr.Blocks() as demo:
         # scenegraph_type.change(set_scenegraph_options,
         #                        inputs=[input_image, winsize, refid, scenegraph_type],
         #                        outputs=[winsize, refid])
-        input_image.change(set_scenegraph_options,
-                          inputs=[input_image, winsize, refid, scenegraph_type],
-                          outputs=[winsize, refid])
         # min_conf_thr.release(fn=model_from_scene_fun,
         #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
         #                              clean_depth, transparent_cams, cam_size, same_focals],
@@ -732,6 +727,10 @@ with gr.Blocks() as demo:
         #                       scenegraph_type, winsize, refid, same_focals],
         #               outputs=[scene, outmodel, processed_image, eschernet_input])
 
+        # events
+        input_image.change(set_scenegraph_options,
+                           inputs=[input_image, winsize, refid, scenegraph_type],
+                           outputs=[winsize, refid])
         run_dust3r.click(fn=get_reconstructed_scene,
                          inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
                                  mask_sky, clean_depth, transparent_cams, cam_size,
@@ -740,20 +739,9 @@ with gr.Blocks() as demo:
 
 
     # events
-    # preview images on input change
     input_image.change(fn=preview_input,
                        inputs=[input_image],
                        outputs=[processed_image])
-
-    # submit.click(fn=generate_mvs,
-    #     inputs=[eschernet_input, sample_steps, sample_seed,
-    #             nvs_num, nvs_mode],
-    #     outputs=[mv_images, output_video],
-    # )#.success(
-    # #     fn=make3d,
-    # #     inputs=[mv_images],
-    # #     outputs=[output_video, output_model_obj, output_model_glb]
-    # # )
 
     submit.click(fn=run_eschernet,
                  inputs=[eschernet_input, sample_steps, sample_seed,
