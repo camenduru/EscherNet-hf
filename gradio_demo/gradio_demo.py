@@ -17,6 +17,7 @@ import cv2
 import matplotlib.pyplot as pl
 pl.ion()
 
+print("cuda is available: ", torch.cuda.is_available())
 CaPE_TYPE = "6DoF"
 device = 'cuda' #if torch.cuda.is_available() else 'cpu'
 weight_dtype = torch.float16
