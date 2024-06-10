@@ -47,45 +47,45 @@ def get_imshapes(edges, pred_i, pred_j):
     return imshapes
 
 
-def get_conf_trf(mode):
-    if mode == 'log':
-        def conf_trf(x): return x.log()
-    elif mode == 'sqrt':
-        def conf_trf(x): return x.sqrt()
-    elif mode == 'm1':
-        def conf_trf(x): return x-1
-    elif mode in ('id', 'none'):
-        def conf_trf(x): return x
-    else:
-        raise ValueError(f'bad mode for {mode=}')
-    return conf_trf
-
-
-# def conf_trf_log(x):
-#     return x.log()
-#
-# def conf_trf_sqrt(x):
-#     return x.sqrt()
-#
-# def conf_trf_m1(x):
-#     return x - 1
-#
-# def conf_trf_id(x):
-#     return x
-#
-# # Mapping of modes to their corresponding functions
-# conf_trf_map = {
-#     'log': conf_trf_log,
-#     'sqrt': conf_trf_sqrt,
-#     'm1': conf_trf_m1,
-#     'id': conf_trf_id,
-#     'none': conf_trf_id
-# }
-#
 # def get_conf_trf(mode):
-#     if mode not in conf_trf_map:
+#     if mode == 'log':
+#         def conf_trf(x): return x.log()
+#     elif mode == 'sqrt':
+#         def conf_trf(x): return x.sqrt()
+#     elif mode == 'm1':
+#         def conf_trf(x): return x-1
+#     elif mode in ('id', 'none'):
+#         def conf_trf(x): return x
+#     else:
 #         raise ValueError(f'bad mode for {mode=}')
-#     return conf_trf_map[mode]
+#     return conf_trf
+
+
+def conf_trf_log(x):
+    return x.log()
+
+def conf_trf_sqrt(x):
+    return x.sqrt()
+
+def conf_trf_m1(x):
+    return x - 1
+
+def conf_trf_id(x):
+    return x
+
+# Mapping of modes to their corresponding functions
+conf_trf_map = {
+    'log': conf_trf_log,
+    'sqrt': conf_trf_sqrt,
+    'm1': conf_trf_m1,
+    'id': conf_trf_id,
+    'none': conf_trf_id
+}
+
+def get_conf_trf(mode):
+    if mode not in conf_trf_map:
+        raise ValueError(f'bad mode for {mode=}')
+    return conf_trf_map[mode]
 
 
 

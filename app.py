@@ -693,49 +693,49 @@ with gr.Blocks() as demo:
             clean_depth = gr.Checkbox(value=True, label="Clean-up depthmaps", visible=False)
             transparent_cams = gr.Checkbox(value=False, label="Transparent cameras", visible=False)
 
-        # events
-        # scenegraph_type.change(set_scenegraph_options,
-        #                        inputs=[input_image, winsize, refid, scenegraph_type],
-        #                        outputs=[winsize, refid])
-        # min_conf_thr.release(fn=model_from_scene_fun,
-        #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                              clean_depth, transparent_cams, cam_size, same_focals],
-        #                      outputs=outmodel)
-        # cam_size.change(fn=model_from_scene_fun,
-        #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                         clean_depth, transparent_cams, cam_size, same_focals],
-        #                 outputs=outmodel)
-        # as_pointcloud.change(fn=model_from_scene_fun,
-        #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                              clean_depth, transparent_cams, cam_size, same_focals],
-        #                      outputs=outmodel)
-        # mask_sky.change(fn=model_from_scene_fun,
-        #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                         clean_depth, transparent_cams, cam_size, same_focals],
-        #                 outputs=outmodel)
-        # clean_depth.change(fn=model_from_scene_fun,
-        #                    inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                            clean_depth, transparent_cams, cam_size, same_focals],
-        #                    outputs=outmodel)
-        # transparent_cams.change(model_from_scene_fun,
-        #                         inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-        #                                 clean_depth, transparent_cams, cam_size, same_focals],
-        #                         outputs=outmodel)
-        # run_dust3r.click(fn=recon_fun,
-        #               inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
-        #                       mask_sky, clean_depth, transparent_cams, cam_size,
-        #                       scenegraph_type, winsize, refid, same_focals],
-        #               outputs=[scene, outmodel, processed_image, eschernet_input])
+    # events
+    # scenegraph_type.change(set_scenegraph_options,
+    #                        inputs=[input_image, winsize, refid, scenegraph_type],
+    #                        outputs=[winsize, refid])
+    # min_conf_thr.release(fn=model_from_scene_fun,
+    #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                              clean_depth, transparent_cams, cam_size, same_focals],
+    #                      outputs=outmodel)
+    # cam_size.change(fn=model_from_scene_fun,
+    #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                         clean_depth, transparent_cams, cam_size, same_focals],
+    #                 outputs=outmodel)
+    # as_pointcloud.change(fn=model_from_scene_fun,
+    #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                              clean_depth, transparent_cams, cam_size, same_focals],
+    #                      outputs=outmodel)
+    # mask_sky.change(fn=model_from_scene_fun,
+    #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                         clean_depth, transparent_cams, cam_size, same_focals],
+    #                 outputs=outmodel)
+    # clean_depth.change(fn=model_from_scene_fun,
+    #                    inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                            clean_depth, transparent_cams, cam_size, same_focals],
+    #                    outputs=outmodel)
+    # transparent_cams.change(model_from_scene_fun,
+    #                         inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                                 clean_depth, transparent_cams, cam_size, same_focals],
+    #                         outputs=outmodel)
+    # run_dust3r.click(fn=recon_fun,
+    #               inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
+    #                       mask_sky, clean_depth, transparent_cams, cam_size,
+    #                       scenegraph_type, winsize, refid, same_focals],
+    #               outputs=[scene, outmodel, processed_image, eschernet_input])
 
-        # events
-        input_image.change(set_scenegraph_options,
-                           inputs=[input_image, winsize, refid, scenegraph_type],
-                           outputs=[winsize, refid])
-        run_dust3r.click(fn=get_reconstructed_scene,
-                         inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
-                                 mask_sky, clean_depth, transparent_cams, cam_size,
-                                 scenegraph_type, winsize, refid, same_focals],
-                         outputs=[scene, outmodel, processed_image, eschernet_input],)
+    # events
+    input_image.change(set_scenegraph_options,
+                       inputs=[input_image, winsize, refid, scenegraph_type],
+                       outputs=[winsize, refid])
+    run_dust3r.click(fn=get_reconstructed_scene,
+                     inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
+                             mask_sky, clean_depth, transparent_cams, cam_size,
+                             scenegraph_type, winsize, refid, same_focals],
+                     outputs=[scene, outmodel, processed_image, eschernet_input])
 
 
     # events
@@ -746,14 +746,13 @@ with gr.Blocks() as demo:
     submit.click(fn=run_eschernet,
                  inputs=[eschernet_input, sample_steps, sample_seed,
                          nvs_num, nvs_mode],
-                 outputs=[mv_images, output_video],
-                 )
+                 outputs=[mv_images, output_video])
 
 
 
 # demo.queue(max_size=10)
 # demo.launch(share=True, server_name="0.0.0.0", server_port=None)
-demo.launch()
+demo.queue(max_size=10).launch()
 
 # if __name__ == '__main__':
 #     main()
