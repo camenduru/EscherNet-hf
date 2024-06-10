@@ -110,7 +110,7 @@ pipeline.set_progress_bar_config(disable=False)
 pipeline.enable_xformers_memory_efficient_attention()
 # enable vae slicing
 pipeline.enable_vae_slicing()
-pipeline = pipeline.to(device)
+# pipeline = pipeline.to(device)
 
 
 
@@ -180,6 +180,8 @@ def run_eschernet(tmpdirname, eschernet_input_dict, sample_steps, sample_seed, n
     assert T_out == pose_out.shape[1]
 
     # run inference
+    pipeline.to(device)
+    pipeline.enable_xformers_memory_efficient_attention()
     if CaPE_TYPE == "6DoF":
         with torch.autocast("cuda"):
             image = pipeline(input_imgs=input_image, prompt_imgs=input_image,
