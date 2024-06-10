@@ -107,10 +107,12 @@ pipeline.image_encoder = image_encoder.to(weight_dtype)
 
 pipeline.set_progress_bar_config(disable=False)
 
+pipeline = pipeline.to(device)
+
 # pipeline.enable_xformers_memory_efficient_attention()
 # enable vae slicing
 pipeline.enable_vae_slicing()
-# pipeline = pipeline.to(device)
+pipeline.enable_xformers_memory_efficient_attention()
 
 
 
@@ -180,8 +182,8 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
     assert T_out == pose_out.shape[1]
 
     # run inference
-    pipeline.to(device)
-    pipeline.enable_xformers_memory_efficient_attention()
+    # pipeline.to(device)
+    # pipeline.enable_xformers_memory_efficient_attention()
     if CaPE_TYPE == "6DoF":
         with torch.autocast("cuda"):
             image = pipeline(input_imgs=input_image, prompt_imgs=input_image,
@@ -334,8 +336,6 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     """
     silent = False
     image_size = 224
-    weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
-    model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
     # remove the directory if it already exists
     outdir = tmpdirname
     if os.path.exists(outdir):
@@ -531,9 +531,8 @@ def preview_input(inputfiles):
 # dustr init
 silent = False
 image_size = 224
-# weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
-# model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
-model=None
+weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
+model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
 # dust3r will write the 3D model inside tmpdirname
 # with tempfile.TemporaryDirectory(suffix='dust3r_gradio_demo') as tmpdirname:
 tmpdirname = os.path.join('logs/user_object')
@@ -543,11 +542,6 @@ if os.path.exists(tmpdirname):
 os.makedirs(tmpdirname, exist_ok=True)
 if not silent:
     print('Outputing stuff in', tmpdirname)
-
-# recon_fun = functools.partial(get_reconstructed_scene, tmpdirname, model, device, silent, image_size)
-# model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
-
-# generate_mvs = functools.partial(run_eschernet, tmpdirname)
 
 _HEADER_ = '''
 <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
@@ -604,10 +598,6 @@ with gr.Blocks() as demo:
                 # input examples under "examples" folder
                 gr.Examples(
                     examples=get_examples('examples'),
-                    # examples=[
-                    #            [['examples/controller/frame000077.jpg', 'examples/controller/frame000032.jpg', 'examples/controller/frame000172.jpg']],
-                    #            [['examples/hairdryer/frame000081.jpg', 'examples/hairdryer/frame000162.jpg', 'examples/hairdryer/frame000003.jpg']],
-                    #           ],
                     inputs=[input_image],
                     label="Examples (click one set of images to start!)",
                     examples_per_page=20
@@ -664,12 +654,6 @@ with gr.Blocks() as demo:
                 submit = gr.Button("Submit", elem_id="eschernet", variant="primary")
 
             with gr.Row():
-                # mv_show_images = gr.Image(
-                #     label="Generated Multi-views",
-                #     type="pil",
-                #     width=379,
-                #     interactive=False
-                # )
                 with gr.Column():
                     output_video = gr.Video(
                         label="video", format="mp4",
@@ -677,22 +661,6 @@ with gr.Blocks() as demo:
                         autoplay=True,
                         interactive=False
                     )
-
-            # with gr.Row():
-            #     with gr.Tab("OBJ"):
-            #         output_model_obj = gr.Model3D(
-            #             label="Output Model (OBJ Format)",
-            #             #width=768,
-            #             interactive=False,
-            #         )
-            #         gr.Markdown("Note: Downloaded .obj model will be flipped. Export .glb instead or manually flip it before usage.")
-            #     with gr.Tab("GLB"):
-            #         output_model_glb = gr.Model3D(
-            #             label="Output Model (GLB Format)",
-            #             #width=768,
-            #             interactive=False,
-            #         )
-            #         gr.Markdown("Note: The model shown here has a darker appearance. Download to get correct results.")
 
             with gr.Row():
                 gr.Markdown('''The novel views are generated on an archimedean spiral. You can download the video''')
