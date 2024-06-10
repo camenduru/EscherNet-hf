@@ -116,7 +116,7 @@ pipeline.enable_vae_slicing()
 
 
 @spaces.GPU(duration=120)
-def run_eschernet(tmpdirname, eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
+def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
     generator = torch.Generator(device=device).manual_seed(sample_seed)
     T_out = nvs_num
@@ -289,7 +289,7 @@ def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, 
     outfile = os.path.join(outdir, 'scene.glb')
     if not silent:
         print('(exporting 3D scene to', outfile, ')')
-    # scene.export(file_obj=outfile)
+    scene.export(file_obj=outfile)
     return outfile
 
 @spaces.GPU(duration=120)
@@ -325,16 +325,19 @@ def get_3D_model_from_scene(outdir, silent, scene, min_conf_thr=3, as_pointcloud
                                         same_focals=same_focals)
 
 @spaces.GPU(duration=120)
-def get_reconstructed_scene(outdir, model, device, silent, image_size, filelist, schedule, niter, min_conf_thr,
+def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
                             as_pointcloud, mask_sky, clean_depth, transparent_cams, cam_size,
                             scenegraph_type, winsize, refid, same_focals):
     """
     from a list of images, run dust3r inference, global aligner.
     then run get_3D_model_from_scene
     """
+    silent = False
+    image_size = 224
     weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
     model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
     # remove the directory if it already exists
+    outdir = tmpdirname
     if os.path.exists(outdir):
         shutil.rmtree(outdir)
     os.makedirs(outdir, exist_ok=True)
@@ -541,10 +544,10 @@ os.makedirs(tmpdirname, exist_ok=True)
 if not silent:
     print('Outputing stuff in', tmpdirname)
 
-recon_fun = functools.partial(get_reconstructed_scene, tmpdirname, model, device, silent, image_size)
-model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
+# recon_fun = functools.partial(get_reconstructed_scene, tmpdirname, model, device, silent, image_size)
+# model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
 
-generate_mvs = functools.partial(run_eschernet, tmpdirname)
+# generate_mvs = functools.partial(run_eschernet, tmpdirname)
 
 _HEADER_ = '''
 <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
@@ -755,11 +758,17 @@ with gr.Blocks() as demo:
         #                         inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
         #                                 clean_depth, transparent_cams, cam_size, same_focals],
         #                         outputs=outmodel)
-        run_dust3r.click(fn=recon_fun,
-                      inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
-                              mask_sky, clean_depth, transparent_cams, cam_size,
-                              scenegraph_type, winsize, refid, same_focals],
-                      outputs=[scene, outmodel, processed_image, eschernet_input])
+        # run_dust3r.click(fn=recon_fun,
+        #               inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
+        #                       mask_sky, clean_depth, transparent_cams, cam_size,
+        #                       scenegraph_type, winsize, refid, same_focals],
+        #               outputs=[scene, outmodel, processed_image, eschernet_input])
+
+        run_dust3r.click(fn=get_reconstructed_scene,
+                         inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
+                                 mask_sky, clean_depth, transparent_cams, cam_size,
+                                 scenegraph_type, winsize, refid, same_focals],
+                         outputs=[scene, outmodel, processed_image, eschernet_input],)
 
 
     # events
@@ -768,15 +777,21 @@ with gr.Blocks() as demo:
                        inputs=[input_image],
                        outputs=[processed_image])
 
-    submit.click(fn=generate_mvs,
-        inputs=[eschernet_input, sample_steps, sample_seed,
-                nvs_num, nvs_mode],
-        outputs=[mv_images, output_video],
-    )#.success(
+    # submit.click(fn=generate_mvs,
+    #     inputs=[eschernet_input, sample_steps, sample_seed,
+    #             nvs_num, nvs_mode],
+    #     outputs=[mv_images, output_video],
+    # )#.success(
     # #     fn=make3d,
     # #     inputs=[mv_images],
     # #     outputs=[output_video, output_model_obj, output_model_glb]
     # # )
+
+    submit.click(fn=run_eschernet,
+                 inputs=[eschernet_input, sample_steps, sample_seed,
+                         nvs_num, nvs_mode],
+                 outputs=[mv_images, output_video],
+                 )
 
 
 
