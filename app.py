@@ -239,7 +239,7 @@ from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
 import functools
 import math
 
-@spaces.GPU
+@spaces.GPU(duration=120)
 def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, cam_size=0.05,
                                  cam_color=None, as_pointcloud=False,
                                  transparent_cams=False, silent=False, same_focals=False):
@@ -289,7 +289,7 @@ def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, 
     outfile = os.path.join(outdir, 'scene.glb')
     if not silent:
         print('(exporting 3D scene to', outfile, ')')
-    scene.export(file_obj=outfile)
+    # scene.export(file_obj=outfile)
     return outfile
 
 @spaces.GPU(duration=120)
