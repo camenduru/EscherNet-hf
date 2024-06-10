@@ -522,263 +522,263 @@ def preview_input(inputfiles):
         imgs.append(img)
     return imgs
 
-def main():
-    # dustr init
-    silent = False
-    image_size = 224
-    weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
-    model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
-    # dust3r will write the 3D model inside tmpdirname
-    # with tempfile.TemporaryDirectory(suffix='dust3r_gradio_demo') as tmpdirname:
-    tmpdirname = os.path.join('logs/user_object')
-    # remove the directory if it already exists
-    if os.path.exists(tmpdirname):
-        shutil.rmtree(tmpdirname)
-    os.makedirs(tmpdirname, exist_ok=True)
-    if not silent:
-        print('Outputing stuff in', tmpdirname)
+# def main():
+# dustr init
+silent = False
+image_size = 224
+weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
+model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
+# dust3r will write the 3D model inside tmpdirname
+# with tempfile.TemporaryDirectory(suffix='dust3r_gradio_demo') as tmpdirname:
+tmpdirname = os.path.join('logs/user_object')
+# remove the directory if it already exists
+if os.path.exists(tmpdirname):
+    shutil.rmtree(tmpdirname)
+os.makedirs(tmpdirname, exist_ok=True)
+if not silent:
+    print('Outputing stuff in', tmpdirname)
 
-    recon_fun = functools.partial(get_reconstructed_scene, tmpdirname, model, device, silent, image_size)
-    model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
+recon_fun = functools.partial(get_reconstructed_scene, tmpdirname, model, device, silent, image_size)
+model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
 
-    generate_mvs = functools.partial(run_eschernet, tmpdirname)
+generate_mvs = functools.partial(run_eschernet, tmpdirname)
 
-    _HEADER_ = '''
-    <h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
-    <b>EscherNet</b> is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis. 
-    
-    Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Camera Positional Encoding)</b>.
-    
-    <a href='https://kxhit.github.io/EscherNet' target='_blank'>Project</a> <b>|</b>
-    <a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a> <b>|</b>
-    <a href='https://arxiv.org/abs/2402.03908' target='_blank'>ArXiv</a>
-    
-    <h4><b>Tips:</b></h4>
-    
-    - Our model can take <b>any number input images</b>. The more images you provide, the better the results.
-    
-    - Our model can generate <b>any number and any pose</b> novel views. You can specify the number of views you want to generate. In this demo, we set novel views on an <b>archemedian spiral</b> for simplicity.
-    
-    - The pose estimation is done using <a href='https://github.com/naver/dust3r' target='_blank'>DUSt3R</a>. You can also provide your own poses or get pose via any SLAM system.
-    
-    - The current checkpoint supports 6DoF camera pose and is trained on 30k 3D <a href='https://objaverse.allenai.org/' target='_blank'>Objaverse</a> objects for demo. Scaling is on the roadmap!
-    
-    '''
+_HEADER_ = '''
+<h2><b>[CVPR'24 Oral] EscherNet: A Generative Model for Scalable View Synthesis</b></h2>
+<b>EscherNet</b> is a multiview diffusion model for scalable generative any-to-any number/pose novel view synthesis. 
 
-    _CITE_ = r"""
-    📝 <b>Citation</b>:
-    ```bibtex
-    @article{kong2024eschernet,
-        title={EscherNet: A Generative Model for Scalable View Synthesis},
-        author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
-        journal={arXiv preprint arXiv:2402.03908},
-        year={2024}
-        }
-    ```
-    """
+Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Camera Positional Encoding)</b>.
 
-    with gr.Blocks() as demo:
-        gr.Markdown(_HEADER_)
-        mv_images = gr.State()
-        scene = gr.State(None)
-        eschernet_input = gr.State(None)
-        with gr.Row(variant="panel"):
-            # left column
-            with gr.Column():
-                with gr.Row():
-                    input_image = gr.File(file_count="multiple")
-                # with gr.Row():
-                #     # set the size of the window
-                #     preview_image = gr.Gallery(label='Input Views', rows=1,
-                with gr.Row():
-                    run_dust3r = gr.Button("Get Pose!", elem_id="dust3r")
-                with gr.Row():
-                    processed_image = gr.Gallery(label='Input Views', columns=2, height="100%")
-                with gr.Row(variant="panel"):
-                    # input examples under "examples" folder
-                    gr.Examples(
-                        examples=get_examples('examples'),
-                        # examples=[
-                        #            [['examples/controller/frame000077.jpg', 'examples/controller/frame000032.jpg', 'examples/controller/frame000172.jpg']],
-                        #            [['examples/hairdryer/frame000081.jpg', 'examples/hairdryer/frame000162.jpg', 'examples/hairdryer/frame000003.jpg']],
-                        #           ],
-                        inputs=[input_image],
-                        label="Examples (click one set of images to start!)",
-                        examples_per_page=20
-                    )
+<a href='https://kxhit.github.io/EscherNet' target='_blank'>Project</a> <b>|</b>
+<a href='https://github.com/kxhit/EscherNet' target='_blank'>GitHub</a> <b>|</b>
+<a href='https://arxiv.org/abs/2402.03908' target='_blank'>ArXiv</a>
 
+<h4><b>Tips:</b></h4>
 
+- Our model can take <b>any number input images</b>. The more images you provide, the better the results.
 
+- Our model can generate <b>any number and any pose</b> novel views. You can specify the number of views you want to generate. In this demo, we set novel views on an <b>archemedian spiral</b> for simplicity.
 
+- The pose estimation is done using <a href='https://github.com/naver/dust3r' target='_blank'>DUSt3R</a>. You can also provide your own poses or get pose via any SLAM system.
 
-            # right column
-            with gr.Column():
+- The current checkpoint supports 6DoF camera pose and is trained on 30k 3D <a href='https://objaverse.allenai.org/' target='_blank'>Objaverse</a> objects for demo. Scaling is on the roadmap!
 
-                with gr.Row():
-                    outmodel = gr.Model3D()
+'''
 
-                with gr.Row():
-                    gr.Markdown('''
-                    <h4><b>Check if the pose and segmentation looks correct. If not, remove the incorrect images and try again.</b></h4>
-                    ''')
+_CITE_ = r"""
+📝 <b>Citation</b>:
+```bibtex
+@article{kong2024eschernet,
+    title={EscherNet: A Generative Model for Scalable View Synthesis},
+    author={Kong, Xin and Liu, Shikun and Lyu, Xiaoyang and Taher, Marwan and Qi, Xiaojuan and Davison, Andrew J},
+    journal={arXiv preprint arXiv:2402.03908},
+    year={2024}
+    }
+```
+"""
 
-                with gr.Row():
-                    with gr.Group():
-                        do_remove_background = gr.Checkbox(
-                            label="Remove Background", value=True
-                        )
-                        sample_seed = gr.Number(value=42, label="Seed Value", precision=0)
-
-                        sample_steps = gr.Slider(
-                            label="Sample Steps",
-                            minimum=30,
-                            maximum=75,
-                            value=50,
-                            step=5,
-                            visible=False
-                        )
-
-                        nvs_num = gr.Slider(
-                            label="Number of Novel Views",
-                            minimum=5,
-                            maximum=100,
-                            value=30,
-                            step=1
-                        )
-
-                        nvs_mode = gr.Dropdown(["archimedes circle"],   # "fixed 4 views", "fixed 8 views"
-                                           value="archimedes circle", label="Novel Views Pose Chosen", visible=True)
-
-                with gr.Row():
-                    gr.Markdown('''
-                    <h4><b>Choose your desired novel view poses number and generate! The more output images the longer it takes.</b></h4>
-                    ''')
-
-                with gr.Row():
-                    submit = gr.Button("Submit", elem_id="eschernet", variant="primary")
-
-                with gr.Row():
-                    # mv_show_images = gr.Image(
-                    #     label="Generated Multi-views",
-                    #     type="pil",
-                    #     width=379,
-                    #     interactive=False
-                    # )
-                    with gr.Column():
-                        output_video = gr.Video(
-                            label="video", format="mp4",
-                            width=379,
-                            autoplay=True,
-                            interactive=False
-                        )
-
-                # with gr.Row():
-                #     with gr.Tab("OBJ"):
-                #         output_model_obj = gr.Model3D(
-                #             label="Output Model (OBJ Format)",
-                #             #width=768,
-                #             interactive=False,
-                #         )
-                #         gr.Markdown("Note: Downloaded .obj model will be flipped. Export .glb instead or manually flip it before usage.")
-                #     with gr.Tab("GLB"):
-                #         output_model_glb = gr.Model3D(
-                #             label="Output Model (GLB Format)",
-                #             #width=768,
-                #             interactive=False,
-                #         )
-                #         gr.Markdown("Note: The model shown here has a darker appearance. Download to get correct results.")
-
-                with gr.Row():
-                    gr.Markdown('''The novel views are generated on an archimedean spiral. You can download the video''')
-
-        gr.Markdown(_CITE_)
-
-        # set dust3r parameter invisible to be clean
+with gr.Blocks() as demo:
+    gr.Markdown(_HEADER_)
+    mv_images = gr.State()
+    scene = gr.State(None)
+    eschernet_input = gr.State(None)
+    with gr.Row(variant="panel"):
+        # left column
         with gr.Column():
             with gr.Row():
-                schedule = gr.Dropdown(["linear", "cosine"],
-                                           value='linear', label="schedule", info="For global alignment!", visible=False)
-                niter = gr.Number(value=300, precision=0, minimum=0, maximum=5000,
-                                      label="num_iterations", info="For global alignment!", visible=False)
-                scenegraph_type = gr.Dropdown(["complete", "swin", "oneref"],
-                                                  value='complete', label="Scenegraph",
-                                                  info="Define how to make pairs",
-                                                  interactive=True, visible=False)
-                same_focals = gr.Checkbox(value=True, label="Focal", info="Use the same focal for all cameras", visible=False)
-                winsize = gr.Slider(label="Scene Graph: Window Size", value=1,
-                                        minimum=1, maximum=1, step=1, visible=False)
-                refid = gr.Slider(label="Scene Graph: Id", value=0, minimum=0, maximum=0, step=1, visible=False)
+                input_image = gr.File(file_count="multiple")
+            # with gr.Row():
+            #     # set the size of the window
+            #     preview_image = gr.Gallery(label='Input Views', rows=1,
+            with gr.Row():
+                run_dust3r = gr.Button("Get Pose!", elem_id="dust3r")
+            with gr.Row():
+                processed_image = gr.Gallery(label='Input Views', columns=2, height="100%")
+            with gr.Row(variant="panel"):
+                # input examples under "examples" folder
+                gr.Examples(
+                    examples=get_examples('examples'),
+                    # examples=[
+                    #            [['examples/controller/frame000077.jpg', 'examples/controller/frame000032.jpg', 'examples/controller/frame000172.jpg']],
+                    #            [['examples/hairdryer/frame000081.jpg', 'examples/hairdryer/frame000162.jpg', 'examples/hairdryer/frame000003.jpg']],
+                    #           ],
+                    inputs=[input_image],
+                    label="Examples (click one set of images to start!)",
+                    examples_per_page=20
+                )
+
+
+
+
+
+        # right column
+        with gr.Column():
 
             with gr.Row():
-                # adjust the confidence threshold
-                min_conf_thr = gr.Slider(label="min_conf_thr", value=3.0, minimum=1.0, maximum=20, step=0.1, visible=False)
-                # adjust the camera size in the output pointcloud
-                cam_size = gr.Slider(label="cam_size", value=0.05, minimum=0.01, maximum=0.5, step=0.001, visible=False)
+                outmodel = gr.Model3D()
+
             with gr.Row():
-                as_pointcloud = gr.Checkbox(value=False, label="As pointcloud", visible=False)
-                # two post process implemented
-                mask_sky = gr.Checkbox(value=False, label="Mask sky", visible=False)
-                clean_depth = gr.Checkbox(value=True, label="Clean-up depthmaps", visible=False)
-                transparent_cams = gr.Checkbox(value=False, label="Transparent cameras", visible=False)
+                gr.Markdown('''
+                <h4><b>Check if the pose and segmentation looks correct. If not, remove the incorrect images and try again.</b></h4>
+                ''')
 
-            # events
-            # scenegraph_type.change(set_scenegraph_options,
-            #                        inputs=[input_image, winsize, refid, scenegraph_type],
-            #                        outputs=[winsize, refid])
-            input_image.change(set_scenegraph_options,
-                              inputs=[input_image, winsize, refid, scenegraph_type],
-                              outputs=[winsize, refid])
-            # min_conf_thr.release(fn=model_from_scene_fun,
-            #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                              clean_depth, transparent_cams, cam_size, same_focals],
-            #                      outputs=outmodel)
-            # cam_size.change(fn=model_from_scene_fun,
-            #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                         clean_depth, transparent_cams, cam_size, same_focals],
-            #                 outputs=outmodel)
-            # as_pointcloud.change(fn=model_from_scene_fun,
-            #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                              clean_depth, transparent_cams, cam_size, same_focals],
-            #                      outputs=outmodel)
-            # mask_sky.change(fn=model_from_scene_fun,
-            #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                         clean_depth, transparent_cams, cam_size, same_focals],
-            #                 outputs=outmodel)
-            # clean_depth.change(fn=model_from_scene_fun,
-            #                    inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                            clean_depth, transparent_cams, cam_size, same_focals],
-            #                    outputs=outmodel)
-            # transparent_cams.change(model_from_scene_fun,
-            #                         inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-            #                                 clean_depth, transparent_cams, cam_size, same_focals],
-            #                         outputs=outmodel)
-            run_dust3r.click(fn=recon_fun,
-                          inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
-                                  mask_sky, clean_depth, transparent_cams, cam_size,
-                                  scenegraph_type, winsize, refid, same_focals],
-                          outputs=[scene, outmodel, processed_image, eschernet_input])
+            with gr.Row():
+                with gr.Group():
+                    do_remove_background = gr.Checkbox(
+                        label="Remove Background", value=True
+                    )
+                    sample_seed = gr.Number(value=42, label="Seed Value", precision=0)
 
+                    sample_steps = gr.Slider(
+                        label="Sample Steps",
+                        minimum=30,
+                        maximum=75,
+                        value=50,
+                        step=5,
+                        visible=False
+                    )
+
+                    nvs_num = gr.Slider(
+                        label="Number of Novel Views",
+                        minimum=5,
+                        maximum=100,
+                        value=30,
+                        step=1
+                    )
+
+                    nvs_mode = gr.Dropdown(["archimedes circle"],   # "fixed 4 views", "fixed 8 views"
+                                       value="archimedes circle", label="Novel Views Pose Chosen", visible=True)
+
+            with gr.Row():
+                gr.Markdown('''
+                <h4><b>Choose your desired novel view poses number and generate! The more output images the longer it takes.</b></h4>
+                ''')
+
+            with gr.Row():
+                submit = gr.Button("Submit", elem_id="eschernet", variant="primary")
+
+            with gr.Row():
+                # mv_show_images = gr.Image(
+                #     label="Generated Multi-views",
+                #     type="pil",
+                #     width=379,
+                #     interactive=False
+                # )
+                with gr.Column():
+                    output_video = gr.Video(
+                        label="video", format="mp4",
+                        width=379,
+                        autoplay=True,
+                        interactive=False
+                    )
+
+            # with gr.Row():
+            #     with gr.Tab("OBJ"):
+            #         output_model_obj = gr.Model3D(
+            #             label="Output Model (OBJ Format)",
+            #             #width=768,
+            #             interactive=False,
+            #         )
+            #         gr.Markdown("Note: Downloaded .obj model will be flipped. Export .glb instead or manually flip it before usage.")
+            #     with gr.Tab("GLB"):
+            #         output_model_glb = gr.Model3D(
+            #             label="Output Model (GLB Format)",
+            #             #width=768,
+            #             interactive=False,
+            #         )
+            #         gr.Markdown("Note: The model shown here has a darker appearance. Download to get correct results.")
+
+            with gr.Row():
+                gr.Markdown('''The novel views are generated on an archimedean spiral. You can download the video''')
+
+    gr.Markdown(_CITE_)
+
+    # set dust3r parameter invisible to be clean
+    with gr.Column():
+        with gr.Row():
+            schedule = gr.Dropdown(["linear", "cosine"],
+                                       value='linear', label="schedule", info="For global alignment!", visible=False)
+            niter = gr.Number(value=300, precision=0, minimum=0, maximum=5000,
+                                  label="num_iterations", info="For global alignment!", visible=False)
+            scenegraph_type = gr.Dropdown(["complete", "swin", "oneref"],
+                                              value='complete', label="Scenegraph",
+                                              info="Define how to make pairs",
+                                              interactive=True, visible=False)
+            same_focals = gr.Checkbox(value=True, label="Focal", info="Use the same focal for all cameras", visible=False)
+            winsize = gr.Slider(label="Scene Graph: Window Size", value=1,
+                                    minimum=1, maximum=1, step=1, visible=False)
+            refid = gr.Slider(label="Scene Graph: Id", value=0, minimum=0, maximum=0, step=1, visible=False)
+
+        with gr.Row():
+            # adjust the confidence threshold
+            min_conf_thr = gr.Slider(label="min_conf_thr", value=3.0, minimum=1.0, maximum=20, step=0.1, visible=False)
+            # adjust the camera size in the output pointcloud
+            cam_size = gr.Slider(label="cam_size", value=0.05, minimum=0.01, maximum=0.5, step=0.001, visible=False)
+        with gr.Row():
+            as_pointcloud = gr.Checkbox(value=False, label="As pointcloud", visible=False)
+            # two post process implemented
+            mask_sky = gr.Checkbox(value=False, label="Mask sky", visible=False)
+            clean_depth = gr.Checkbox(value=True, label="Clean-up depthmaps", visible=False)
+            transparent_cams = gr.Checkbox(value=False, label="Transparent cameras", visible=False)
 
         # events
-        # preview images on input change
-        input_image.change(fn=preview_input,
-                           inputs=[input_image],
-                           outputs=[processed_image])
+        # scenegraph_type.change(set_scenegraph_options,
+        #                        inputs=[input_image, winsize, refid, scenegraph_type],
+        #                        outputs=[winsize, refid])
+        input_image.change(set_scenegraph_options,
+                          inputs=[input_image, winsize, refid, scenegraph_type],
+                          outputs=[winsize, refid])
+        # min_conf_thr.release(fn=model_from_scene_fun,
+        #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                              clean_depth, transparent_cams, cam_size, same_focals],
+        #                      outputs=outmodel)
+        # cam_size.change(fn=model_from_scene_fun,
+        #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                         clean_depth, transparent_cams, cam_size, same_focals],
+        #                 outputs=outmodel)
+        # as_pointcloud.change(fn=model_from_scene_fun,
+        #                      inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                              clean_depth, transparent_cams, cam_size, same_focals],
+        #                      outputs=outmodel)
+        # mask_sky.change(fn=model_from_scene_fun,
+        #                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                         clean_depth, transparent_cams, cam_size, same_focals],
+        #                 outputs=outmodel)
+        # clean_depth.change(fn=model_from_scene_fun,
+        #                    inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                            clean_depth, transparent_cams, cam_size, same_focals],
+        #                    outputs=outmodel)
+        # transparent_cams.change(model_from_scene_fun,
+        #                         inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
+        #                                 clean_depth, transparent_cams, cam_size, same_focals],
+        #                         outputs=outmodel)
+        run_dust3r.click(fn=recon_fun,
+                      inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
+                              mask_sky, clean_depth, transparent_cams, cam_size,
+                              scenegraph_type, winsize, refid, same_focals],
+                      outputs=[scene, outmodel, processed_image, eschernet_input])
 
-        submit.click(fn=generate_mvs,
-            inputs=[eschernet_input, sample_steps, sample_seed,
-                    nvs_num, nvs_mode],
-            outputs=[mv_images, output_video],
-        )#.success(
-        # #     fn=make3d,
-        # #     inputs=[mv_images],
-        # #     outputs=[output_video, output_model_obj, output_model_glb]
-        # # )
+
+    # events
+    # preview images on input change
+    input_image.change(fn=preview_input,
+                       inputs=[input_image],
+                       outputs=[processed_image])
+
+    submit.click(fn=generate_mvs,
+        inputs=[eschernet_input, sample_steps, sample_seed,
+                nvs_num, nvs_mode],
+        outputs=[mv_images, output_video],
+    )#.success(
+    # #     fn=make3d,
+    # #     inputs=[mv_images],
+    # #     outputs=[output_video, output_model_obj, output_model_glb]
+    # # )
 
 
 
-    demo.queue(max_size=10)
-    demo.launch(share=True, server_name="0.0.0.0", server_port=None)
+demo.queue(max_size=10)
+demo.launch(share=True, server_name="0.0.0.0", server_port=None)
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
