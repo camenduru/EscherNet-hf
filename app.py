@@ -104,12 +104,13 @@ pipeline = Zero1to3StableDiffusionPipeline.from_pretrained(
     torch_dtype=weight_dtype,
 )
 pipeline.image_encoder = image_encoder.to(weight_dtype)
-pipeline = pipeline.to(device)
+
 pipeline.set_progress_bar_config(disable=False)
 
 pipeline.enable_xformers_memory_efficient_attention()
 # enable vae slicing
 pipeline.enable_vae_slicing()
+pipeline = pipeline.to(device)
 
 
 
