@@ -332,6 +332,8 @@ def get_reconstructed_scene(outdir, model, device, silent, image_size, filelist,
     from a list of images, run dust3r inference, global aligner.
     then run get_3D_model_from_scene
     """
+    weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
+    model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
     # remove the directory if it already exists
     if os.path.exists(outdir):
         shutil.rmtree(outdir)
@@ -526,8 +528,9 @@ def preview_input(inputfiles):
 # dustr init
 silent = False
 image_size = 224
-weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
-model = AsymmetricCroCo3DStereo.from_pretrained(weights_path, landscape_only=False).to(device)
+# weights_path = 'checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth'
+# model = AsymmetricCroCo3DStereo.from_pretrained(weights_path).to(device)
+model=None
 # dust3r will write the 3D model inside tmpdirname
 # with tempfile.TemporaryDirectory(suffix='dust3r_gradio_demo') as tmpdirname:
 tmpdirname = os.path.join('logs/user_object')
