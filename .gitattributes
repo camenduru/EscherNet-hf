@@ -1,0 +1,2 @@
+checkpoints/DUSt3R_ViTLarge_BaseDecoder_224_linear.pth filter=lfs diff=lfs merge=lfs -text
+checkpoints/DUSt3R_ViTLarge_BaseDecoder_512_dpt.pth filter=lfs diff=lfs merge=lfs -text
