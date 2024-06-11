@@ -114,13 +114,12 @@ pipeline = pipeline.to(device)
 pipeline.enable_vae_slicing()
 # pipeline.enable_xformers_memory_efficient_attention()
 
-generator = torch.Generator(device=device).manual_seed(0)
-
 
 @spaces.GPU(duration=120)
 def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
-    generator.manual_seed(sample_seed)
+    generator = torch.Generator(device=device).manual_seed(sample_seed)
+    # generator = None
     T_out = nvs_num
     T_in = len(eschernet_input_dict['imgs'])
     ####### output pose
@@ -392,7 +391,7 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     # for eschernet
     # get optimized values from scene
     rgbimg = to_numpy(scene.imgs)
-    focals = to_numpy(scene.get_focals().cpu())
+    # focals = to_numpy(scene.get_focals().cpu())
     cams2world = to_numpy(scene.get_im_poses().cpu())
 
     # 3D pointcloud from depthmap, poses and intrinsics
@@ -478,7 +477,7 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     eschernet_input = {"poses": cams2world,
                        "radii": radii,
                        "imgs": rgbaimg}
-
+    print("got eschernet input")
     outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
                                       clean_depth, transparent_cams, cam_size, same_focals=same_focals)
 
