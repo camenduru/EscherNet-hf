@@ -6,7 +6,7 @@ accelerate
 transformers
 gradio
 spaces
-rembg
+rembg==2.0.50
 open3d
 trimesh
 einops
