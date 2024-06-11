@@ -114,13 +114,13 @@ pipeline = pipeline.to(device)
 pipeline.enable_vae_slicing()
 # pipeline.enable_xformers_memory_efficient_attention()
 
-
+generator = torch.Generator(device=device).manual_seed(0)
 
 
 @spaces.GPU(duration=120)
 def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
-    generator = torch.Generator(device=device).manual_seed(sample_seed)
+    generator.manual_seed(sample_seed)
     T_out = nvs_num
     T_in = len(eschernet_input_dict['imgs'])
     ####### output pose
@@ -577,7 +577,7 @@ _CITE_ = r"""
 
 with gr.Blocks() as demo:
     gr.Markdown(_HEADER_)
-    mv_images = gr.State()
+    # mv_images = gr.State()
     scene = gr.State(None)
     eschernet_input = gr.State(None)
     with gr.Row(variant="panel"):
@@ -585,9 +585,6 @@ with gr.Blocks() as demo:
         with gr.Column():
             with gr.Row():
                 input_image = gr.File(file_count="multiple")
-            # with gr.Row():
-            #     # set the size of the window
-            #     preview_image = gr.Gallery(label='Input Views', rows=1,
             with gr.Row():
                 run_dust3r = gr.Button("Get Pose!", elem_id="dust3r")
             with gr.Row():
@@ -746,7 +743,7 @@ with gr.Blocks() as demo:
     submit.click(fn=run_eschernet,
                  inputs=[eschernet_input, sample_steps, sample_seed,
                          nvs_num, nvs_mode],
-                 outputs=[mv_images, output_video])
+                 outputs=[output_video])
 
 
 
