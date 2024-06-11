@@ -111,6 +111,7 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_b
 
     imgs = []
     imgs_rgba = []
+    load_time = time.time()
     for path in folder_content:
         if not path.lower().endswith(supported_images_extensions):
             continue
@@ -169,4 +170,5 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_b
     assert imgs, 'no images foud at '+root
     if verbose:
         print(f' (Found {len(imgs)} images)')
+        print(f' (Loading time: {time.time()-load_time:.2f}s)')
     return imgs, imgs_rgba

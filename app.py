@@ -562,7 +562,7 @@ Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Cam
 
 <h4><b>Tips:</b></h4>
 
-- Our model can take <b>any number input images</b>. The more images you provide (>=3 for this demo), the better the results.
+- Our model can take <b>any number input images</b>. The more images you provide <b>(>=3 for this demo)</b>, the better the results.
 
 - Our model can generate <b>any number and any pose</b> novel views. You can specify the number of views you want to generate. In this demo, we set novel views on an <b>archemedian spiral</b> for simplicity.
 
@@ -619,7 +619,7 @@ with gr.Blocks() as demo:
 
             with gr.Row():
                 gr.Markdown('''
-                <h4><b>Check if the pose and segmentation looks correct. If not, remove the incorrect images and try again.</b></h4>
+                <h4><b>Check if the pose (blue is axis is estimated z-up direction) and segmentation looks correct. If not, remove the incorrect images and try again.</b></h4>
                 ''')
 
             with gr.Row():
@@ -667,7 +667,9 @@ with gr.Blocks() as demo:
                     )
 
             with gr.Row():
-                gr.Markdown('''The novel views are generated on an archimedean spiral. You can download the video''')
+                gr.Markdown('''
+                <h4><b>The novel views are generated on an archimedean spiral (rotating around z-up axis and looking at the object center). You can download the video.</b></h4>
+                ''')
 
     gr.Markdown(_CITE_)
 
