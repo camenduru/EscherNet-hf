@@ -183,19 +183,11 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
     # run inference
     # pipeline.to(device)
     pipeline.enable_xformers_memory_efficient_attention()
-    if CaPE_TYPE == "6DoF":
-        with torch.autocast("cuda"):
-            image = pipeline(input_imgs=input_image, prompt_imgs=input_image,
-                             poses=[[pose_out, pose_out_inv], [pose_in, pose_in_inv]],
-                             height=h, width=w, T_in=T_in, T_out=T_out,
-                             guidance_scale=guidance_scale, num_inference_steps=50, generator=generator,
-                             output_type="numpy").images
-    elif CaPE_TYPE == "4DoF":
-        with torch.autocast("cuda"):
-            image = pipeline(input_imgs=input_image, prompt_imgs=input_image, poses=[pose_out, pose_in],
-                             height=h, width=w, T_in=T_in, T_out=T_out,
-                             guidance_scale=guidance_scale, num_inference_steps=50, generator=generator,
-                             output_type="numpy").images
+    image = pipeline(input_imgs=input_image, prompt_imgs=input_image,
+                         poses=[[pose_out, pose_out_inv], [pose_in, pose_in_inv]],
+                         height=h, width=w, T_in=T_in, T_out=T_out,
+                         guidance_scale=guidance_scale, num_inference_steps=50, generator=generator,
+                         output_type="numpy").images
 
     # save output image
     output_dir = os.path.join(tmpdirname, "eschernet")
@@ -748,7 +740,7 @@ with gr.Blocks() as demo:
 
 # demo.queue(max_size=10)
 # demo.launch(share=True, server_name="0.0.0.0", server_port=None)
-demo.queue(max_size=1).launch()
+demo.queue(max_size=10).launch()
 
 # if __name__ == '__main__':
 #     main()

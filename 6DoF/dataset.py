@@ -2,40 +2,12 @@ import os
 import math
 from pathlib import Path
 import torch
-import torchvision
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
+from torch.utils.data import Dataset
 from PIL import Image
 import numpy as np
-import webdataset as wds
-from torch.utils.data.distributed import DistributedSampler
 import matplotlib.pyplot as plt
 import sys
 
-class ObjaverseDataLoader():
-    def __init__(self, root_dir, batch_size, total_view=12, num_workers=4):
-        self.root_dir = root_dir
-        self.batch_size = batch_size
-        self.num_workers = num_workers
-        self.total_view = total_view
-
-        image_transforms = [torchvision.transforms.Resize((256, 256)),
-                            transforms.ToTensor(),
-                            transforms.Normalize([0.5], [0.5])]
-        self.image_transforms = torchvision.transforms.Compose(image_transforms)
-
-    def train_dataloader(self):
-        dataset = ObjaverseData(root_dir=self.root_dir, total_view=self.total_view, validation=False,
-                                image_transforms=self.image_transforms)
-        # sampler = DistributedSampler(dataset)
-        return wds.WebLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False)
-                             # sampler=sampler)
-
-    def val_dataloader(self):
-        dataset = ObjaverseData(root_dir=self.root_dir, total_view=self.total_view, validation=True,
-                                image_transforms=self.image_transforms)
-        sampler = DistributedSampler(dataset)
-        return wds.WebLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=False)
 
 def get_pose(transformation):
     # transformation: 4x4
