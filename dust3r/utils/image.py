@@ -12,23 +12,9 @@ from PIL.ImageOps import exif_transpose
 import torchvision.transforms as tvf
 os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 import cv2  # noqa
-
-import rembg
-rembg_session = rembg.new_session()
-
 import time
 from PIL import Image
 from rembg import remove
-from segment_anything import sam_model_registry, SamPredictor
-def sam_init():
-    sam_checkpoint = os.path.join("./sam_pt/sam_vit_h_4b8939.pth")
-    if os.path.exists(sam_checkpoint) is False:
-        os.system("wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth -P ./sam_pt/")
-    model_type = "vit_h"
-
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint).to(device=f"cuda:{0 if torch.cuda.is_available() else 'cpu'}")
-    predictor = SamPredictor(sam)
-    return predictor
 
 def sam_segment(predictor, input_image, *bbox_coords):
     bbox = np.array(bbox_coords)
@@ -50,7 +36,6 @@ def sam_segment(predictor, input_image, *bbox_coords):
     torch.cuda.empty_cache()
     return Image.fromarray(out_image_bbox, mode='RGBA')
 
-predictor = sam_init()
 
 try:
     from pillow_heif import register_heif_opener  # noqa
@@ -103,7 +88,7 @@ def _resize_pil_image(img, long_edge_size):
     new_size = tuple(int(round(x*long_edge_size/S)) for x in img.size)
     return img.resize(new_size, interp)
 
-def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_background=True, rembg_session=None):
+def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_background=True, rembg_session=None, predictor=None):
     """ open and convert all images in a list or folder to proper input format for DUSt3R
     """
     if isinstance(folder_or_list, str):

@@ -72,6 +72,8 @@ from diffusers import DDIMScheduler
 from dataset import get_pose
 from CN_encoder import CN_encoder
 from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
+from segment_anything import sam_model_registry, SamPredictor
+import rembg
 
 pretrained_model_name_or_path = "kxic/EscherNet_demo"
 resolution = 256
@@ -113,6 +115,22 @@ pipeline = pipeline.to(device)
 # enable vae slicing
 pipeline.enable_vae_slicing()
 # pipeline.enable_xformers_memory_efficient_attention()
+
+
+#### object segmentation
+def sam_init():
+    sam_checkpoint = os.path.join("./sam_pt/sam_vit_h_4b8939.pth")
+    if os.path.exists(sam_checkpoint) is False:
+        os.system("wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth -P ./sam_pt/")
+    model_type = "vit_h"
+
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint).to(device=device)
+    predictor = SamPredictor(sam)
+    return predictor
+
+rembg_session = rembg.new_session()
+predictor = sam_init()
+
 
 
 @spaces.GPU(duration=120)
@@ -330,7 +348,7 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     if os.path.exists(outdir):
         shutil.rmtree(outdir)
     os.makedirs(outdir, exist_ok=True)
-    imgs, imgs_rgba = load_images(filelist, size=image_size, verbose=not silent, do_remove_background=True)
+    imgs, imgs_rgba = load_images(filelist, size=image_size, verbose=not silent, do_remove_background=True, rembg_session=rembg_session, predictor=predictor)
     if len(imgs) == 1:
         imgs = [imgs[0], copy.deepcopy(imgs[0])]
         imgs[1]['idx'] = 1
@@ -544,7 +562,7 @@ Image views are treated as tokens and the camera pose is encoded by <b>CaPE (Cam
 
 <h4><b>Tips:</b></h4>
 
-- Our model can take <b>any number input images</b>. The more images you provide, the better the results.
+- Our model can take <b>any number input images</b>. The more images you provide (>=3 for this demo), the better the results.
 
 - Our model can generate <b>any number and any pose</b> novel views. You can specify the number of views you want to generate. In this demo, we set novel views on an <b>archemedian spiral</b> for simplicity.
 
