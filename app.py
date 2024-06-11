@@ -73,7 +73,24 @@ from dataset import get_pose
 from CN_encoder import CN_encoder
 from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 from segment_anything import sam_model_registry, SamPredictor
+
 import rembg
+from carvekit.api.high import HiInterface
+
+def create_carvekit_interface():
+    # Check doc strings for more information
+    interface = HiInterface(object_type="object",  # Can be "object" or "hairs-like".
+                            batch_size_seg=6,
+                            batch_size_matting=1,
+                            device=device,
+                            seg_mask_size=640,  # Use 640 for Tracer B7 and 320 for U2Net
+                            matting_mask_size=2048,
+                            trimap_prob_threshold=231,
+                            trimap_dilation=30,
+                            trimap_erosion_iters=5,
+                            fp16=True)
+
+    return interface
 
 pretrained_model_name_or_path = "kxic/EscherNet_demo"
 resolution = 256
@@ -128,7 +145,8 @@ def sam_init():
     predictor = SamPredictor(sam)
     return predictor
 
-rembg_session = rembg.new_session()
+# rembg_session = rembg.new_session()
+rembg_session = create_carvekit_interface()
 predictor = sam_init()
 
 

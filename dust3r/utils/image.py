@@ -118,12 +118,10 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_b
         img = exif_transpose(PIL.Image.open(os.path.join(root, path))).convert('RGB')
         # remove background if needed
         if do_remove_background:
-            # if rembg_session is None:
-            #     rembg_session = rembg.new_session()
-            # image = rembg.remove(img, session=rembg_session)
-            # foreground = np.array(image)[..., -1] > 127
-
-            image_nobg = remove(img, alpha_matting=True, session=rembg_session)
+            # use rembg
+            # image_nobg = remove(img, alpha_matting=True, session=rembg_session)
+            # use carvekit
+            image_nobg = rembg_session([img])[0]
             arr = np.asarray(image_nobg)[:, :, -1]
             x_nonzero = np.nonzero(arr.sum(axis=0))
             y_nonzero = np.nonzero(arr.sum(axis=1))
