@@ -194,14 +194,14 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
     os.makedirs(output_dir, exist_ok=True)
-    # save to N imgs
-    for i in range(T_out):
-        imsave(os.path.join(output_dir, f'{i}.png'), (image[i] * 255).astype(np.uint8))
+    # # save to N imgs
+    # for i in range(T_out):
+    #     imsave(os.path.join(output_dir, f'{i}.png'), (image[i] * 255).astype(np.uint8))
     # make a gif
     frames = [Image.fromarray((image[i] * 255).astype(np.uint8)) for i in range(T_out)]
-    frame_one = frames[0]
-    frame_one.save(os.path.join(output_dir, "output.gif"), format="GIF", append_images=frames,
-                   save_all=True, duration=50, loop=1)
+    # frame_one = frames[0]
+    # frame_one.save(os.path.join(output_dir, "output.gif"), format="GIF", append_images=frames,
+    #                save_all=True, duration=50, loop=1)
 
     # get a video
     video_path = os.path.join(output_dir, "output.mp4")
