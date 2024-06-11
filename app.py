@@ -216,7 +216,7 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
     imageio.mimwrite(video_path, np.stack(frames), fps=10, codec='h264')
 
 
-    return image, video_path
+    return video_path
 
 # TODO mesh it
 @spaces.GPU(duration=120)
