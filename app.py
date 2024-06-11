@@ -136,7 +136,7 @@ def create_carvekit_interface():
     interface = HiInterface(object_type="object",  # Can be "object" or "hairs-like".
                             batch_size_seg=6,
                             batch_size_matting=1,
-                            device=device,
+                            device="cpu",
                             seg_mask_size=640,  # Use 640 for Tracer B7 and 320 for U2Net
                             matting_mask_size=2048,
                             trimap_prob_threshold=231,
