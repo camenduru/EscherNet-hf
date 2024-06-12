@@ -4,6 +4,7 @@ emoji: 📸📸➡️🖼️🖼️🖼️
 app_file: app.py
 sdk: gradio
 sdk_version: 4.31.0
+short_description: 3D novel view synthesis from any number images!
 ---
 [comment]: <> (# EscherNet: A Generative Model for Scalable View Synthesis)
 
