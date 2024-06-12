@@ -119,9 +119,9 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, do_remove_b
         # remove background if needed
         if do_remove_background:
             # use rembg
-            image_nobg = remove(img, alpha_matting=True, session=rembg_session)
+            # image_nobg = remove(img, alpha_matting=True, session=rembg_session)
             # use carvekit
-            # image_nobg = rembg_session([img])[0]
+            image_nobg = rembg_session([img])[0]
             arr = np.asarray(image_nobg)[:, :, -1]
             x_nonzero = np.nonzero(arr.sum(axis=0))
             y_nonzero = np.nonzero(arr.sum(axis=1))
