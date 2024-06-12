@@ -6,6 +6,7 @@ import gradio as gr
 import os
 import shutil
 import numpy as np
+import math
 import open3d as o3d
 from PIL import Image
 import torchvision
@@ -263,7 +264,6 @@ from dust3r.utils.image import load_images, rgb
 from dust3r.utils.device import to_numpy
 from dust3r.viz import add_scene_cam, CAM_COLORS, OPENGL, pts3d_to_trimesh, cat_meshes
 from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
-import math
 
 @spaces.GPU
 def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, cam_size=0.05,
