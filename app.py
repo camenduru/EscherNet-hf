@@ -6,14 +6,11 @@ import gradio as gr
 import os
 import shutil
 import numpy as np
-import math
 import open3d as o3d
 from PIL import Image
 import torchvision
 import trimesh
-from skimage.io import imsave
 import imageio
-import cv2
 import matplotlib.pyplot as pl
 pl.ion()
 
@@ -477,12 +474,12 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     scene.vis_poses = cams2world.copy()
     scene.vis_pts3d = pts3d.copy()
 
-    # TODO save cams2world and rgbimg to each file, file name "000.npy", "001.npy", ... and "000.png", "001.png", ...
-    for i, (img, img_rgba, pose) in enumerate(zip(rgbimg, rgbaimg, cams2world)):
-        np.save(os.path.join(outdir, f"{i:03d}.npy"), pose)
-        pl.imsave(os.path.join(outdir, f"{i:03d}.png"), img)
-        pl.imsave(os.path.join(outdir, f"{i:03d}_rgba.png"), img_rgba)
-        # np.save(os.path.join(outdir, f"{i:03d}_focal.npy"), to_numpy(focal))
+    # # TODO save cams2world and rgbimg to each file, file name "000.npy", "001.npy", ... and "000.png", "001.png", ...
+    # for i, (img, img_rgba, pose) in enumerate(zip(rgbimg, rgbaimg, cams2world)):
+    #     np.save(os.path.join(outdir, f"{i:03d}.npy"), pose)
+    #     pl.imsave(os.path.join(outdir, f"{i:03d}.png"), img)
+    #     pl.imsave(os.path.join(outdir, f"{i:03d}_rgba.png"), img_rgba)
+    #     # np.save(os.path.join(outdir, f"{i:03d}_focal.npy"), to_numpy(focal))
     # save the min/max radius of camera
     radii = np.linalg.norm(np.linalg.inv(cams2world)[..., :3, 3])
     np.save(os.path.join(outdir, "radii.npy"), radii)

@@ -12,3 +12,5 @@ segment-anything
 roma
 imageio==2.32.0
 imageio-ffmpeg==0.4.8
+scipy
+matplotlib
