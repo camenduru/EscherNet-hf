@@ -1,6 +1,5 @@
 diffusers
-torch==2.0.0
-xformers==0.0.19
+xformers
 torchvision
 accelerate
 transformers
