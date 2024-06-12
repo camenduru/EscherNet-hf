@@ -489,8 +489,7 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
                                       clean_depth, transparent_cams, cam_size, same_focals=same_focals)
 
-    # return scene, outfile, imgs, eschernet_input
-    return
+    return outfile, imgs, eschernet_input
 
 
 def set_scenegraph_options(inputfiles, winsize, refid, scenegraph_type):
@@ -585,8 +584,6 @@ _CITE_ = r"""
 
 with gr.Blocks() as demo:
     gr.Markdown(_HEADER_)
-    # mv_images = gr.State()
-    scene = gr.State(None)
     eschernet_input = gr.State(None)
     with gr.Row(variant="panel"):
         # left column
@@ -732,7 +729,7 @@ with gr.Blocks() as demo:
     #               inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
     #                       mask_sky, clean_depth, transparent_cams, cam_size,
     #                       scenegraph_type, winsize, refid, same_focals],
-    #               outputs=[scene, outmodel, processed_image, eschernet_input])
+    #               outputs=[outmodel, processed_image, eschernet_input])
 
     # events
     input_image.change(set_scenegraph_options,
@@ -742,8 +739,7 @@ with gr.Blocks() as demo:
                      inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
                              mask_sky, clean_depth, transparent_cams, cam_size,
                              scenegraph_type, winsize, refid, same_focals],
-                     # outputs=[scene, outmodel, processed_image, eschernet_input])
-    outputs = [])
+                     outputs=[outmodel, processed_image, eschernet_input])
 
 
     # events
