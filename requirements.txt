@@ -16,3 +16,5 @@ segment-anything
 roma
 imageio==2.32.0
 imageio-ffmpeg==0.4.8
+mini-dust3r==0.1.1
+pillow-heif
