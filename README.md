@@ -2,7 +2,7 @@
 title: EscherNet
 app_file: app.py
 sdk: gradio
-sdk_version: 4.19.2
+sdk_version: 4.31.0
 ---
 [comment]: <> (# EscherNet: A Generative Model for Scalable View Synthesis)
 
