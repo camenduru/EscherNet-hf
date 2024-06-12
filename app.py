@@ -136,7 +136,7 @@ def create_carvekit_interface():
     interface = HiInterface(object_type="object",  # Can be "object" or "hairs-like".
                             batch_size_seg=6,
                             batch_size_matting=1,
-                            device="cpu",
+                            device=device,
                             seg_mask_size=640,  # Use 640 for Tracer B7 and 320 for U2Net
                             matting_mask_size=2048,
                             trimap_prob_threshold=231,
@@ -153,7 +153,7 @@ predictor = sam_init()
 
 
 
-@spaces.GPU
+@spaces.GPU(duration=120)
 def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
     generator = torch.Generator(device=device).manual_seed(sample_seed)
