@@ -489,7 +489,8 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
                                       clean_depth, transparent_cams, cam_size, same_focals=same_focals)
 
-    return scene, outfile, imgs, eschernet_input
+    # return scene, outfile, imgs, eschernet_input
+    return
 
 
 def set_scenegraph_options(inputfiles, winsize, refid, scenegraph_type):
@@ -741,7 +742,8 @@ with gr.Blocks() as demo:
                      inputs=[input_image, schedule, niter, min_conf_thr, as_pointcloud,
                              mask_sky, clean_depth, transparent_cams, cam_size,
                              scenegraph_type, winsize, refid, same_focals],
-                     outputs=[scene, outmodel, processed_image, eschernet_input])
+                     # outputs=[scene, outmodel, processed_image, eschernet_input])
+    outputs = [])
 
 
     # events
