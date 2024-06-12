@@ -153,7 +153,7 @@ predictor = sam_init()
 
 
 
-@spaces.GPU(duration=120)
+@spaces.GPU
 def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_mode):
     # set the random seed
     generator = torch.Generator(device=device).manual_seed(sample_seed)
@@ -248,11 +248,6 @@ def run_eschernet(eschernet_input_dict, sample_steps, sample_seed, nvs_num, nvs_
 
     return video_path
 
-# TODO mesh it
-@spaces.GPU(duration=120)
-def make3d():
-    pass
-
 
 
 ############################ Dust3r as Pose Estimation ############################
@@ -268,7 +263,7 @@ from dust3r.viz import add_scene_cam, CAM_COLORS, OPENGL, pts3d_to_trimesh, cat_
 from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
 import math
 
-@spaces.GPU(duration=120)
+@spaces.GPU
 def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, cam_size=0.05,
                                  cam_color=None, as_pointcloud=False,
                                  transparent_cams=False, silent=False, same_focals=False):
@@ -321,7 +316,7 @@ def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, 
     scene.export(file_obj=outfile)
     return outfile
 
-@spaces.GPU(duration=120)
+@spaces.GPU
 def get_3D_model_from_scene(outdir, silent, scene, min_conf_thr=3, as_pointcloud=False, mask_sky=False,
                             clean_depth=False, transparent_cams=False, cam_size=0.05, same_focals=False):
     """
@@ -353,7 +348,7 @@ def get_3D_model_from_scene(outdir, silent, scene, min_conf_thr=3, as_pointcloud
                                         transparent_cams=transparent_cams, cam_size=cam_size, silent=silent,
                                         same_focals=same_focals)
 
-@spaces.GPU(duration=120)
+@spaces.GPU
 def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
                             as_pointcloud, mask_sky, clean_depth, transparent_cams, cam_size,
                             scenegraph_type, winsize, refid, same_focals):
