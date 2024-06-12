@@ -268,6 +268,9 @@ from dust3r.viz import add_scene_cam, CAM_COLORS, OPENGL, pts3d_to_trimesh, cat_
 from dust3r.cloud_opt import global_aligner, GlobalAlignerMode
 import math
 
+from mini_dust3r.api import OptimizedResult, inferece_dust3r, log_optimized_result
+from mini_dust3r.model import AsymmetricCroCo3DStereo
+
 # @spaces.GPU(duration=120)
 def _convert_scene_output_to_glb(outdir, imgs, pts3d, mask, focals, cams2world, cam_size=0.05,
                                  cam_color=None, as_pointcloud=False,
@@ -368,39 +371,26 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     if os.path.exists(outdir):
         shutil.rmtree(outdir)
     os.makedirs(outdir, exist_ok=True)
-    imgs, imgs_rgba = load_images(filelist, size=image_size, verbose=not silent, do_remove_background=True, rembg_session=rembg_session, predictor=predictor)
-    if len(imgs) == 1:
-        imgs = [imgs[0], copy.deepcopy(imgs[0])]
-        imgs[1]['idx'] = 1
-    if scenegraph_type == "swin":
-        scenegraph_type = scenegraph_type + "-" + str(winsize)
-    elif scenegraph_type == "oneref":
-        scenegraph_type = scenegraph_type + "-" + str(refid)
+    # imgs, imgs_rgba = load_images(filelist, size=image_size, verbose=not silent, do_remove_background=True, rembg_session=rembg_session, predictor=predictor)
 
-    pairs = make_pairs(imgs, scene_graph=scenegraph_type, prefilter=None, symmetrize=True)
-    output = inference(pairs, model, device, batch_size=1, verbose=not silent)
+    optimized_results: OptimizedResult = inferece_dust3r(
+        image_dir_or_list=filelist,
+        model=model,
+        device=device,
+        batch_size=1,
+    )
+    rgbimg = optimized_results.rgb_hw3_list
+    imgs_rgba = rgbimg
+    cams2world = optimized_results.world_T_cam_b44
+    pts3d = optimized_results.point_cloud
+    pts_obj = pts3d
+    outfile = os.path.join(outdir, 'scene.glb')
+    # save point cloud trimesh.PointCloud to .ply
+    pts3d.export(os.path.join(outdir, 'scene.glb'))
 
-    mode = GlobalAlignerMode.PointCloudOptimizer if len(imgs) > 2 else GlobalAlignerMode.PairViewer
-    scene = global_aligner(output, device=device, mode=mode, verbose=not silent, same_focals=same_focals)
-    lr = 0.01
 
-    if mode == GlobalAlignerMode.PointCloudOptimizer:
-        loss = scene.compute_global_alignment(init='mst', niter=niter, schedule=schedule, lr=lr)
 
-    # outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
-    #                                   clean_depth, transparent_cams, cam_size, same_focals=same_focals)
-
-    # also return rgb, depth and confidence imgs
-    # depth is normalized with the max value for all images
-    # we apply the jet colormap on the confidence maps
-    rgbimg = scene.imgs
-    # depths = to_numpy(scene.get_depthmaps())
-    # confs = to_numpy([c for c in scene.im_conf])
-    # cmap = pl.get_cmap('jet')
-    # depths_max = max([d.max() for d in depths])
-    # depths = [d / depths_max for d in depths]
-    # confs_max = max([d.max() for d in confs])
-    # confs = [cmap(d / confs_max) for d in confs]
+    # rgbimg = to_numpy(scene.imgs)
 
     imgs = []
     rgbaimg = []
@@ -419,99 +409,96 @@ def get_reconstructed_scene(filelist, schedule, niter, min_conf_thr,
     rgbaimg = np.array(rgbaimg)
 
     # for eschernet
-    # get optimized values from scene
-    rgbimg = to_numpy(scene.imgs)
-    # focals = to_numpy(scene.get_focals().cpu())
-    cams2world = to_numpy(scene.get_im_poses().cpu())
+    # cams2world = to_numpy(scene.get_im_poses().cpu())
+    # pts3d = to_numpy(scene.get_pts3d())
+    # scene.min_conf_thr = float(scene.conf_trf(torch.tensor(min_conf_thr)))
+    # msk = to_numpy(scene.get_masks())
+    # obj_mask = rgbaimg[..., 3] > 0
 
-    # 3D pointcloud from depthmap, poses and intrinsics
-    pts3d = to_numpy(scene.get_pts3d())
-    scene.min_conf_thr = float(scene.conf_trf(torch.tensor(min_conf_thr)))
-    msk = to_numpy(scene.get_masks())
-    obj_mask = rgbaimg[..., 3] > 0
-
-    # TODO set global coordinate system at the center of the scene, z-axis is up
-    pts = np.concatenate([p[m] for p, m in zip(pts3d, msk)]).reshape(-1, 3)
-    pts_obj = np.concatenate([p[m&obj_m] for p, m, obj_m in zip(pts3d, msk, obj_mask)]).reshape(-1, 3)
-    centroid = np.mean(pts_obj, axis=0) # obj center
-    obj2world = np.eye(4)
-    obj2world[:3, 3] = -centroid  # T_wc
-
-    # get z_up vector
-    # TODO fit a plane and get the normal vector
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(pts)
-    plane_model, inliers = pcd.segment_plane(distance_threshold=0.01, ransac_n=3, num_iterations=1000)
-    # get the normalised normal vector dim = 3
-    normal = plane_model[:3] / np.linalg.norm(plane_model[:3])
-    # the normal direction should be pointing up
-    if normal[1] < 0:
-        normal = -normal
-    # print("normal", normal)
-
-    # # TODO z-up 180
-    # z_up = np.array([[1,0,0,0],
-    #                       [0,-1,0,0],
-    #                       [0,0,-1,0],
-    #                       [0,0,0,1]])
-    # obj2world = z_up @ obj2world
-
-    # # avg the y
-    # z_up_avg = cams2world[:,:3,3].sum(0) / np.linalg.norm(cams2world[:,:3,3].sum(0), axis=-1)    # average direction in cam coordinate
-    # # import pdb; pdb.set_trace()
-    # rot_axis = np.cross(np.array([0, 0, 1]), z_up_avg)
-    # rot_angle = np.arccos(np.dot(np.array([0, 0, 1]), z_up_avg) / (np.linalg.norm(z_up_avg) + 1e-6))
+    # # TODO set global coordinate system at the center of the scene, z-axis is up
+    # # pts = np.concatenate([p[m] for p, m in zip(pts3d, msk)]).reshape(-1, 3)
+    # # pts_obj = np.concatenate([p[m&obj_m] for p, m, obj_m in zip(pts3d, msk, obj_mask)]).reshape(-1, 3)
+    # centroid = np.mean(pts_obj, axis=0) # obj center
+    # obj2world = np.eye(4)
+    # obj2world[:3, 3] = -centroid  # T_wc
+    #
+    # # get z_up vector
+    # # TODO fit a plane and get the normal vector
+    # pcd = o3d.geometry.PointCloud()
+    # pcd.points = o3d.utility.Vector3dVector(pts)
+    # plane_model, inliers = pcd.segment_plane(distance_threshold=0.01, ransac_n=3, num_iterations=1000)
+    # # get the normalised normal vector dim = 3
+    # normal = plane_model[:3] / np.linalg.norm(plane_model[:3])
+    # # the normal direction should be pointing up
+    # if normal[1] < 0:
+    #     normal = -normal
+    # # print("normal", normal)
+    #
+    # # # TODO z-up 180
+    # # z_up = np.array([[1,0,0,0],
+    # #                       [0,-1,0,0],
+    # #                       [0,0,-1,0],
+    # #                       [0,0,0,1]])
+    # # obj2world = z_up @ obj2world
+    #
+    # # # avg the y
+    # # z_up_avg = cams2world[:,:3,3].sum(0) / np.linalg.norm(cams2world[:,:3,3].sum(0), axis=-1)    # average direction in cam coordinate
+    # # # import pdb; pdb.set_trace()
+    # # rot_axis = np.cross(np.array([0, 0, 1]), z_up_avg)
+    # # rot_angle = np.arccos(np.dot(np.array([0, 0, 1]), z_up_avg) / (np.linalg.norm(z_up_avg) + 1e-6))
+    # # rot = Rotation.from_rotvec(rot_angle * rot_axis)
+    # # z_up = np.eye(4)
+    # # z_up[:3, :3] = rot.as_matrix()
+    #
+    # # get the rotation matrix from normal to z-axis
+    # z_axis = np.array([0, 0, 1])
+    # rot_axis = np.cross(normal, z_axis)
+    # rot_angle = np.arccos(np.dot(normal, z_axis) / (np.linalg.norm(normal) + 1e-6))
     # rot = Rotation.from_rotvec(rot_angle * rot_axis)
     # z_up = np.eye(4)
     # z_up[:3, :3] = rot.as_matrix()
+    # obj2world = z_up @ obj2world
+    # # flip 180
+    # flip_rot = np.array([[1, 0, 0, 0],
+    #                      [0, -1, 0, 0],
+    #                      [0, 0, -1, 0],
+    #                      [0, 0, 0, 1]])
+    # obj2world = flip_rot @ obj2world
+    #
+    # # get new cams2obj
+    # cams2obj = []
+    # for i, cam2world in enumerate(cams2world):
+    #     cams2obj.append(obj2world @ cam2world)
+    # # TODO transform pts3d to the new coordinate system
+    # for i, pts in enumerate(pts3d):
+    #     pts3d[i] = (obj2world @ np.concatenate([pts, np.ones_like(pts)[..., :1]], axis=-1).transpose(2, 0, 1).reshape(4,
+    #                                                                                                                   -1)) \
+    #                    .reshape(4, pts.shape[0], pts.shape[1]).transpose(1, 2, 0)[..., :3]
+    # cams2world = np.array(cams2obj)
+    # # TODO rewrite hack
+    # scene.vis_poses = cams2world.copy()
+    # scene.vis_pts3d = pts3d.copy()
 
-    # get the rotation matrix from normal to z-axis
-    z_axis = np.array([0, 0, 1])
-    rot_axis = np.cross(normal, z_axis)
-    rot_angle = np.arccos(np.dot(normal, z_axis) / (np.linalg.norm(normal) + 1e-6))
-    rot = Rotation.from_rotvec(rot_angle * rot_axis)
-    z_up = np.eye(4)
-    z_up[:3, :3] = rot.as_matrix()
-    obj2world = z_up @ obj2world
-    # flip 180
-    flip_rot = np.array([[1, 0, 0, 0],
-                         [0, -1, 0, 0],
-                         [0, 0, -1, 0],
-                         [0, 0, 0, 1]])
-    obj2world = flip_rot @ obj2world
-
-    # get new cams2obj
-    cams2obj = []
-    for i, cam2world in enumerate(cams2world):
-        cams2obj.append(obj2world @ cam2world)
-    # TODO transform pts3d to the new coordinate system
-    for i, pts in enumerate(pts3d):
-        pts3d[i] = (obj2world @ np.concatenate([pts, np.ones_like(pts)[..., :1]], axis=-1).transpose(2, 0, 1).reshape(4,
-                                                                                                                      -1)) \
-                       .reshape(4, pts.shape[0], pts.shape[1]).transpose(1, 2, 0)[..., :3]
-    cams2world = np.array(cams2obj)
-    # TODO rewrite hack
-    scene.vis_poses = cams2world.copy()
-    scene.vis_pts3d = pts3d.copy()
-
-    # TODO save cams2world and rgbimg to each file, file name "000.npy", "001.npy", ... and "000.png", "001.png", ...
-    for i, (img, img_rgba, pose) in enumerate(zip(rgbimg, rgbaimg, cams2world)):
-        np.save(os.path.join(outdir, f"{i:03d}.npy"), pose)
-        pl.imsave(os.path.join(outdir, f"{i:03d}.png"), img)
-        pl.imsave(os.path.join(outdir, f"{i:03d}_rgba.png"), img_rgba)
-        # np.save(os.path.join(outdir, f"{i:03d}_focal.npy"), to_numpy(focal))
+    # # TODO save cams2world and rgbimg to each file, file name "000.npy", "001.npy", ... and "000.png", "001.png", ...
+    # for i, (img, img_rgba, pose) in enumerate(zip(rgbimg, rgbaimg, cams2world)):
+    #     np.save(os.path.join(outdir, f"{i:03d}.npy"), pose)
+    #     pl.imsave(os.path.join(outdir, f"{i:03d}.png"), img)
+    #     pl.imsave(os.path.join(outdir, f"{i:03d}_rgba.png"), img_rgba)
+    #     # np.save(os.path.join(outdir, f"{i:03d}_focal.npy"), to_numpy(focal))
     # save the min/max radius of camera
     radii = np.linalg.norm(np.linalg.inv(cams2world)[..., :3, 3])
-    np.save(os.path.join(outdir, "radii.npy"), radii)
+    # np.save(os.path.join(outdir, "radii.npy"), radii)
 
     eschernet_input = {"poses": cams2world,
                        "radii": radii,
                        "imgs": rgbaimg}
     print("got eschernet input")
-    outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
-                                      clean_depth, transparent_cams, cam_size, same_focals=same_focals)
+    # outfile = get_3D_model_from_scene(outdir, silent, scene, min_conf_thr, as_pointcloud, mask_sky,
+    #                                   clean_depth, transparent_cams, cam_size, same_focals=same_focals)
 
     return scene, outfile, imgs, eschernet_input
+
+
 
 
 def set_scenegraph_options(inputfiles, winsize, refid, scenegraph_type):
