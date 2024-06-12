@@ -73,7 +73,7 @@ from CN_encoder import CN_encoder
 from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 from segment_anything import sam_model_registry, SamPredictor
 
-import rembg
+# import rembg
 from carvekit.api.high import HiInterface
 
 
@@ -153,8 +153,6 @@ rembg_session.fba = rembg_session.fba.to(device)
 rembg_session.fba.device = device
 rembg_session.device = device
 rembg_session.u2net.device = device
-# rembg_session.postprocessing_pipeline = rembg_session.postprocessing_pipeline.to(device)
-# rembg_session.postprocessing_pipeline.device = device
 
 predictor = sam_init()
 
