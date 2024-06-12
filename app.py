@@ -5,7 +5,6 @@ print("cuda is available: ", torch.cuda.is_available())
 import gradio as gr
 import os
 import shutil
-import rembg
 import numpy as np
 import math
 import open3d as o3d
@@ -74,8 +73,8 @@ from CN_encoder import CN_encoder
 from pipeline_zero1to3 import Zero1to3StableDiffusionPipeline
 from segment_anything import sam_model_registry, SamPredictor
 
-# import rembg
-from carvekit.api.high import HiInterface
+import rembg
+# from carvekit.api.high import HiInterface
 
 
 pretrained_model_name_or_path = "kxic/EscherNet_demo"
@@ -148,19 +147,9 @@ def sam_init():
 #     return interface
 
 
-# rembg_session = rembg.new_session()
+rembg_session = rembg.new_session()
 # rembg_session = create_carvekit_interface()
-interface = HiInterface(object_type="object",  # Can be "object" or "hairs-like".
-                            batch_size_seg=6,
-                            batch_size_matting=1,
-                            device=device,
-                            seg_mask_size=640,  # Use 640 for Tracer B7 and 320 for U2Net
-                            matting_mask_size=2048,
-                            trimap_prob_threshold=231,
-                            trimap_dilation=30,
-                            trimap_erosion_iters=5,
-                            fp16=True)
-rembg_session = interface
+
 predictor = sam_init()
 
 
