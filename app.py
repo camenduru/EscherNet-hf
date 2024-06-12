@@ -131,6 +131,7 @@ def sam_init():
     predictor = SamPredictor(sam)
     return predictor
 
+@spaces.GPU
 def create_carvekit_interface():
     # Check doc strings for more information
     interface = HiInterface(object_type="object",  # Can be "object" or "hairs-like".
