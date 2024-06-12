@@ -755,10 +755,4 @@ with gr.Blocks() as demo:
                  outputs=[output_video])
 
 
-
-# demo.queue(max_size=10)
-# demo.launch(share=True, server_name="0.0.0.0", server_port=None)
-demo.queue(max_size=10).launch()
-
-# if __name__ == '__main__':
-#     main()
+demo.queue(max_size=10).launch(share=True)
