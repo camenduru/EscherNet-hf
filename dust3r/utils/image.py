@@ -14,7 +14,7 @@ os.environ["OPENCV_IO_ENABLE_OPENEXR"] = "1"
 import cv2  # noqa
 import time
 from PIL import Image
-from rembg import remove
+# from rembg import remove
 
 def sam_segment(predictor, input_image, *bbox_coords):
     bbox = np.array(bbox_coords)
